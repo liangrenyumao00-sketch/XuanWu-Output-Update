@@ -32,20 +32,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton, QLabel
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-
-# 添加稳健的导入逻辑，确保在从 widgets 目录运行时也能找到项目根目录的 core
-try:
-    from core.i18n import t
-except ModuleNotFoundError:
-    try:
-        ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-        if ROOT_DIR not in sys.path:
-            sys.path.insert(0, ROOT_DIR)
-        from core.i18n import t
-    except Exception:
-        # 兜底：如果仍无法导入国际化模块，提供一个简单的 t 函数
-        def t(s: str) -> str:
-            return s
+from core.i18n import t
 
 
 class UpdaterThread(QThread):

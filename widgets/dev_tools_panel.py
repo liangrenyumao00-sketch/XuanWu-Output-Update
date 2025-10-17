@@ -1472,12 +1472,6 @@ class DevToolsPanel:
     def run_external_updater(self):
         """启动外部更新程序 updater.py 替换文件，并退出当前程序"""
 
-        # 确定 updater.py 路径
-        updater_script = os.path.join(self.base_dir, "widgets", "updater.py")
-        if not os.path.exists(updater_script):
-            QMessageBox.warning(self.parent, t("error"), t("updater_not_found"))
-            return
-
         # 运行的 python 解释器
         python_exe = sys.executable
 
@@ -1491,9 +1485,11 @@ class DevToolsPanel:
             QMessageBox.warning(self.parent, "错误", "更新包未准备好，无法安装。")
             return
 
+        # 以模块方式从项目根运行，确保可以导入 core.*
         args = [
             python_exe,
-            updater_script,
+            "-m",
+            "widgets.updater",
             extract_dir,
             base_dir,
             main_script,
@@ -1501,7 +1497,8 @@ class DevToolsPanel:
         ]
 
         try:
-            subprocess.Popen(args)
+            # 设置工作目录为项目根，避免导入路径问题
+            subprocess.Popen(args, cwd=base_dir)
             sys.exit(0)
         except Exception as e:
             QMessageBox.warning(self.parent, "错误", f"启动更新程序失败: {e}")

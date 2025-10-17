@@ -28,6 +28,12 @@ import subprocess
 import psutil
 import traceback
 
+# 确保项目根目录在 sys.path 中，以便导入 core 模块
+_this_file_dir = os.path.abspath(os.path.dirname(__file__))
+_project_root_dir = os.path.abspath(os.path.join(_this_file_dir, os.pardir))
+if _project_root_dir not in sys.path:
+    sys.path.insert(0, _project_root_dir)
+
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton, QLabel
 )

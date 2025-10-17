@@ -32,13 +32,6 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton, QLabel
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-
-# Ensure project root is on sys.path when running this module directly
-_this_file_dir = os.path.abspath(os.path.dirname(__file__))
-_project_root_dir = os.path.abspath(os.path.join(_this_file_dir, os.pardir))
-if _project_root_dir not in sys.path:
-    sys.path.insert(0, _project_root_dir)
-
 from core.i18n import t
 
 
@@ -181,6 +174,24 @@ class UpdaterThread(QThread):
                 self.log("🗑️ 已删除临时更新目录")
             except Exception as e:
                 self.log(f"⚠️ 删除临时更新目录失败: {e}")
+
+            # 进一步尝试清理上层临时目录（例如 %TEMP%/app_update_xxxxxx）
+            try:
+                parent_dir = os.path.abspath(os.path.join(self.update_dir, os.pardir))
+                # 仅在目录名包含明显的临时更新前缀时才尝试删除，避免误删
+                if os.path.basename(parent_dir).startswith("app_update_"):
+                    # 尝试清理残留的 zip/part 文件
+                    for fname in ("update.zip", "update.zip.part"):
+                        fpath = os.path.join(parent_dir, fname)
+                        if os.path.exists(fpath):
+                            try:
+                                os.remove(fpath)
+                            except Exception:
+                                pass
+                    shutil.rmtree(parent_dir, ignore_errors=True)
+                    self.log("🧹 已尝试清理上层临时更新目录")
+            except Exception as e:
+                self.log(f"⚠️ 清理上层临时目录失败: {e}")
 
             zip_path = os.path.join(self.target_dir, "update_temp.zip")
             try:
